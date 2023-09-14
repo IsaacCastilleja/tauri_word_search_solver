@@ -6,7 +6,7 @@ import WordSearchArea from "./components/WordSearchArea.vue";
 
 <template>
   <div class="container">
-    <div style="width: 25vh">
+    <div>
       <WordSearchArea />
     </div>
     
