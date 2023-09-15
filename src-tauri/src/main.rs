@@ -105,57 +105,54 @@ fn get_solved(solved_words: tauri::State<Mutex<Vec<SolvedWord>>>) -> Result<Solv
 }
 
 
-fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord>{
-    fn parse_word_from_row(row_string: &str, word_match: &str, is_reverse: bool) -> [usize; 2] {
+fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
+    let letter_grid = wordsearch.letter_grid;
+    let word_bank = wordsearch.word_bank;
+    let mut final_solved: Vec<SolvedWord> = Vec::new();
+
+    fn parse_word_from_string(ref_string: &str, word_match: &str, is_reverse: bool) -> Option<[usize; 2]> {
         let mut count = 0;
-        let word_chars: Vec<char> = word_match.chars().collect();  // Convert word_match into a Vec<char>
+        let word_chars: Vec<char> = word_match.chars().collect();
 
-        for (index, letter) in row_string.chars().enumerate() {
-            if count == word_match.len() {
-                let start = if is_reverse {row_string.len() - index - word_match.len()} else {index - word_match.len()};
-                let end = if is_reverse {row_string.len() - index - 1} else {index - 1};
-                return [start, end];
-            }
-
+        for (index, letter) in ref_string.chars().enumerate() {
             if letter == word_chars[count] {
                 count += 1;
                 if count == word_match.len() {
-                    let start = if is_reverse {row_string.len() - index - 1} else {index + 1 - word_match.len()};
-                    let end = if is_reverse {row_string.len() - index - 1 + word_match.len() - 1} else {index};
-                    return [start, end];
+                    let start = if is_reverse {ref_string.len() - index - 1} else {index + 1 - word_match.len()};
+                    let end = if is_reverse {ref_string.len() - index - 1 + word_match.len() - 1} else {index};
+                    return Some([start, end]);
                 }
             } else {
-                count = 0;  // Reset the count if there's a mismatch
+                count = 0;
             }
-            
         }
 
-        [0, 0]  // Return [0, 0] if the word_match is not found in row_string (Shouldn't happen)
+        None
     }
-    
-    let grid = wordsearch.letter_grid;
-    let bank = wordsearch.word_bank;
-    let mut solved_words: Vec<SolvedWord> = Vec::new();
-    for (row_index, row) in grid.iter().enumerate() {
-        let row_string: String = row.iter().collect();
-        for word in &bank {
-            // left-right case
-            if row_string.contains(word){
-                let col_indices = parse_word_from_row(&row_string, &word, false);
-                let grid_indices = [[row_index, col_indices[0]], [row_index, col_indices[1]]];
-                solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone()})
-            }
-            // right-left case
-            let reverse_row_string = row_string.chars().rev().collect::<String>();
-            if reverse_row_string.contains(word) {
-                let col_indices = parse_word_from_row(&reverse_row_string, &word, true);
-                let grid_indices = [[row_index, col_indices[0]], [row_index, col_indices[1]]];
-                solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone()})
+
+    fn solve_rows(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
+        for (row_index, row) in grid.iter().enumerate() {
+            let row_string: String = row.iter().collect();
+            let reversed_row_string: String = row_string.chars().rev().collect();
+
+            for word in bank {
+                if let Some(col_indices) = parse_word_from_string(&row_string, word, false) {
+                    let grid_indices = [[row_index, col_indices[0]], [row_index, col_indices[1]]];
+                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone()});
+                }
+
+                if let Some(col_indices) = parse_word_from_string(&reversed_row_string, word, true) {
+                    let grid_indices = [[row_index, col_indices[0]], [row_index, col_indices[1]]];
+                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone()});
+                }
             }
         }
     }
-    solved_words
+
+    solve_rows(&letter_grid, &word_bank, &mut final_solved);
+    final_solved
 }
+
 
 
 
