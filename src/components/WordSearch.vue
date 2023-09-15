@@ -9,14 +9,14 @@ import Connector from "./Connector.vue";
 const grid = ref([['E', 'R', 'R', 'O', 'R']]); // Initial value
 const wordBank = ref([]);
 async function fetchWordSearch() {
-    try {
-        const data = await invoke("get_wordsearch");
-        grid.value = data.letter_grid;
-        wordBank.value = data.word_bank;
-    } catch (err) {
-        console.error("Error fetching word search:", err);
-        grid.value = [['E', 'R', 'R', 'O', 'R']];
-    }
+  try {
+      const data = await invoke("get_wordsearch");
+      grid.value = data.letter_grid;
+      wordBank.value = data.word_bank;
+  } catch (err) {
+      console.error("Error fetching word search:", err);
+      grid.value = [['E', 'R', 'R', 'O', 'R']];
+  }
 }
 
 onMounted(fetchWordSearch);
@@ -24,8 +24,41 @@ onMounted(fetchWordSearch);
 const solvedWords = ref([]);
 
 async function checkForSolved() {
-
+  const data = await invoke("get_solved").catch((e) => {
+    console.log(e);
+    return;
+  });
+  if(data){
+    return data;
+  }
 }
+
+let solvedInterval = setInterval(async () => {
+  const solved = await checkForSolved();
+  if(solved){
+    drawConnector(solved.start_letter, solved.end_letter);
+    document.getElementById(`wordbank-${solved.word}`).style.setProperty("text-decoration", "line-through");
+  }
+}, 2000);
+
+function drawConnector(letter1, letter2) {
+  const let1 = document.getElementById(`letter-${letter1[0]}-${letter1[1]}`);
+  const let2 = document.getElementById(`letter-${letter2[0]}-${letter2[1]}`);
+  const rect1 = let1.getBoundingClientRect();
+  const rect2 = let2.getBoundingClientRect();
+
+  const letterGridArea = document.querySelector('.lettergrid-area');
+  const letterGridAreaRect = letterGridArea.getBoundingClientRect();
+
+  const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left - 12;
+  const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + 5;
+  const y1 = (rect1.top + rect1.bottom) / 2.0 - letterGridAreaRect.top - 3;
+  const y2 = (rect2.top + rect2.bottom) / 2.0 - letterGridAreaRect.top - 3;
+
+  solvedWords.value.push({ x1, x2, y1, y2 });
+}
+
+
 
 </script>
 
@@ -33,13 +66,13 @@ async function checkForSolved() {
 <template>
   <div class=wordsearch>
     <div class="lettergrid-area">
-      <Connector :x1="5" :x2="95" :y1="17" :y2="17"/>
+      <Connector v-for="solvedWord in solvedWords" :x1="solvedWord.x1" :x2="solvedWord.x2" :y1="solvedWord.y1" :y2="solvedWord.y2"/>
       <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="lettergrid-row">
       <Letter v-for="(letter, colIndex) in row" :key="colIndex" :value="letter" :id="`letter-${rowIndex}-${colIndex}`"/>
     </div>
     </div>
     <div class="wordbank-area">
-      <WordBank v-for="word, wordIndex in wordBank" :key="wordIndex" :value="word"/>
+      <WordBank v-for="word, wordIndex in wordBank" :key="wordIndex" :value="word" :id="`wordbank-${word}`"/>
     </div>
   </div>
   

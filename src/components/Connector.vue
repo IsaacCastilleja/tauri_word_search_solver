@@ -5,7 +5,7 @@ const props = defineProps(['x1', 'y1', 'x2', 'y2']);
 </script>
 
 <template>
-    <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 250">
+    <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg">
         <line :x1="x1" :y1="y1" :x2="x2" :y2="y2" stroke="red" stroke-width="1px"/>
     </svg>
 </template>
