@@ -36,12 +36,12 @@ async function checkForSolved() {
 let solvedInterval = setInterval(async () => {
   const solved = await checkForSolved();
   if(solved){
-    drawConnector(solved.start_letter, solved.end_letter);
+    drawConnector(solved.start_letter, solved.end_letter, solved.line_type);
     document.getElementById(`wordbank-${solved.word}`).style.setProperty("text-decoration", "line-through");
   }
-}, 2000);
+}, 3000);
 
-function drawConnector(letter1, letter2) {
+function drawConnector(letter1, letter2, lineType) {
   const let1 = document.getElementById(`letter-${letter1[0]}-${letter1[1]}`);
   const let2 = document.getElementById(`letter-${letter2[0]}-${letter2[1]}`);
   const rect1 = let1.getBoundingClientRect();
@@ -50,10 +50,25 @@ function drawConnector(letter1, letter2) {
   const letterGridArea = document.querySelector('.lettergrid-area');
   const letterGridAreaRect = letterGridArea.getBoundingClientRect();
 
-  const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left - 12;
-  const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + 5;
-  const y1 = (rect1.top + rect1.bottom) / 2.0 - letterGridAreaRect.top - 3;
-  const y2 = (rect2.top + rect2.bottom) / 2.0 - letterGridAreaRect.top - 3;
+  let x1_offset = 0;
+  let x2_offset = 0;
+  let y1_offset = 0;
+  let y2_offset = 0;
+  if (lineType === 'r') {
+    x1_offset = - 12;
+    x2_offset = 5;
+    y1_offset = -3;
+    y2_offset = y1_offset;
+  } else if (lineType === 'c') {
+    x1_offset = -3;
+    x2_offset = x1_offset;
+    y1_offset = -8;
+    y2_offset = 4;
+  }
+  const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left + x1_offset;
+  const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + x2_offset;
+  const y1 = (rect1.top + rect1.bottom) / 2.0 - letterGridAreaRect.top + y1_offset;
+  const y2 = (rect2.top + rect2.bottom) / 2.0 - letterGridAreaRect.top + y2_offset;
 
   solvedWords.value.push({ x1, x2, y1, y2 });
 }

@@ -8,6 +8,8 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 use std::sync::Mutex;
+use rand::thread_rng;
+use rand::seq::SliceRandom;
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
@@ -15,10 +17,10 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-fn parse_wordsearch() -> Vec<Vec<char>> {
+fn parse_wordsearch(path: &str) -> Vec<Vec<char>> {
     let mut word_search: Vec<Vec<char>> = Vec::new();
     // File hosts.txt must exist in the current path
-    if let Ok(lines) = read_lines("./src/word_search.txt") {
+    if let Ok(lines) = read_lines(path) {
         // Consumes the iterator, returns an (Optional) String
         for line in lines {
             if let Ok(ip) = line {
@@ -36,10 +38,10 @@ fn parse_wordsearch() -> Vec<Vec<char>> {
     word_search
 }
 
-fn parse_wordbank() -> Vec<String> {
+fn parse_wordbank(path: &str) -> Vec<String> {
     let mut word_bank: Vec<String> = Vec::new();
 
-    if let Ok(lines) = read_lines("./src/word_bank.txt") {
+    if let Ok(lines) = read_lines(path) {
         for line in lines {
             if let Ok(ip) = line {
                 word_bank.push(ip);
@@ -81,16 +83,18 @@ struct SolvedWord {
     start_letter: [usize; 2],
     end_letter: [usize; 2],
     word: String,
+    line_type: char,
 }
 
 impl Serialize for SolvedWord {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer {
-        let mut state = serializer.serialize_struct("SolvedWord", 3)?;
+        let mut state = serializer.serialize_struct("SolvedWord", 4)?;
         state.serialize_field("start_letter", &self.start_letter)?;
         state.serialize_field("end_letter", &self.end_letter)?;
         state.serialize_field("word", &self.word)?;
+        state.serialize_field("line_type", &self.line_type)?;
         state.end()
     }
 }
@@ -138,18 +142,41 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
             for word in bank {
                 if let Some(col_indices) = parse_word_from_string(&row_string, word, false) {
                     let grid_indices = [[row_index, col_indices[0]], [row_index, col_indices[1]]];
-                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone()});
+                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone(), line_type: 'r'});
                 }
 
                 if let Some(col_indices) = parse_word_from_string(&reversed_row_string, word, true) {
                     let grid_indices = [[row_index, col_indices[0]], [row_index, col_indices[1]]];
-                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone()});
+                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone(), line_type: 'r'});
                 }
             }
         }
     }
 
+    fn solve_columns(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
+        for column_index in 0..grid[0].len() {
+            let mut col_string = String::new();
+            for row in grid.iter() {
+                col_string.push(row[column_index]);
+            }
+            let reversed_col_string : String = col_string.chars().rev().collect();
+            for word in bank{
+                if let Some(row_indices) = parse_word_from_string(&col_string, word, false){
+                    let grid_indices = [[row_indices[0], column_index], [row_indices[1], column_index]];
+                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone(), line_type: 'c'});
+                }
+                if let Some(row_indices) = parse_word_from_string(&reversed_col_string, word, true){
+                    let grid_indices = [[row_indices[0], column_index], [row_indices[1], column_index]];
+                    solved_words.push(SolvedWord { start_letter: grid_indices[0], end_letter: grid_indices[1], word: word.clone(), line_type: 'c'});
+                }
+            }
+            
+        }
+        
+    }
+
     solve_rows(&letter_grid, &word_bank, &mut final_solved);
+    solve_columns(&letter_grid, &word_bank, &mut final_solved);
     final_solved
 }
 
@@ -157,15 +184,16 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
 
 
 fn main() {
-    let parsed_lettergrid = parse_wordsearch();
-    let parsed_wordbank = parse_wordbank();
+    let parsed_lettergrid = parse_wordsearch("./src/word_search2.txt");
+    let parsed_wordbank = parse_wordbank("./src/word_bank2.txt");
     let parsed_wordsearch = WordSearch {
         letter_grid: parsed_lettergrid,
         word_bank: parsed_wordbank,
     };
 
-    let solved_words: Vec<SolvedWord>;
+    let mut solved_words: Vec<SolvedWord>;
     solved_words = solve_wordsearch(parsed_wordsearch.clone());
+    solved_words.shuffle(&mut thread_rng());
 
     tauri::Builder::default()
         .manage(Mutex::new(parsed_wordsearch))
