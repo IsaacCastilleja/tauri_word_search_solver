@@ -39,7 +39,7 @@ let solvedInterval = setInterval(async () => {
     drawConnector(solved.start_letter, solved.end_letter, solved.line_type);
     document.getElementById(`wordbank-${solved.word}`).style.setProperty("text-decoration", "line-through");
   }
-}, 3000);
+}, 2000);
 
 function drawConnector(letter1, letter2, lineType) {
   const let1 = document.getElementById(`letter-${letter1[0]}-${letter1[1]}`);

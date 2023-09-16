@@ -22,7 +22,7 @@ const props = defineProps(['x1', 'y1', 'x2', 'y2']);
 .path {
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
-  animation: dash 3s linear forwards;
+  animation: dash 2s linear forwards;
 }
 
 @keyframes dash {

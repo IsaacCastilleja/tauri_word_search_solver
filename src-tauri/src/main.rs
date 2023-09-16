@@ -115,24 +115,33 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
     let mut final_solved: Vec<SolvedWord> = Vec::new();
 
     fn parse_word_from_string(ref_string: &str, word_match: &str, is_reverse: bool) -> Option<[usize; 2]> {
-        let mut count = 0;
+        let mut ref_idx = 0;
         let word_chars: Vec<char> = word_match.chars().collect();
-
-        for (index, letter) in ref_string.chars().enumerate() {
-            if letter == word_chars[count] {
-                count += 1;
-                if count == word_match.len() {
-                    let start = if is_reverse {ref_string.len() - index - 1} else {index + 1 - word_match.len()};
-                    let end = if is_reverse {ref_string.len() - index - 1 + word_match.len() - 1} else {index};
-                    return Some([start, end]);
+        
+        // Brute force search to fix words not being found if the first letter of ref_string is duplicated in the word search e.g. "A A P P L E" or " D D O G" wouldn't be found the old way
+        while ref_idx < ref_string.len() {
+            let mut count = 0;
+            let mut tmp_idx = ref_idx;
+            
+            while tmp_idx < ref_string.len() && count < word_match.len() {
+                if ref_string.chars().nth(tmp_idx).unwrap() == word_chars[count] {
+                    count += 1;
+                    if count == word_match.len() {
+                        let start = if is_reverse { ref_string.len() - tmp_idx - 1} else { tmp_idx + 1 - word_match.len() };
+                        let end = if is_reverse {ref_string.len() - tmp_idx - 1 + word_match.len() - 1} else {tmp_idx};
+                        return Some([start, end]);
+                    }
+                } else {
+                    break;
                 }
-            } else {
-                count = 0;
+                tmp_idx += 1;
             }
+            ref_idx += 1;
         }
-
+    
         None
     }
+    
 
     fn solve_rows(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
         for (row_index, row) in grid.iter().enumerate() {
