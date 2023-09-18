@@ -36,41 +36,57 @@ async function checkForSolved() {
 let solvedInterval = setInterval(async () => {
   const solved = await checkForSolved();
   if(solved){
-    drawConnector(solved.start_letter, solved.end_letter, solved.line_type);
+    drawConnector(solved.start_letter, solved.end_letter, solved.line_type, solved.word);
     document.getElementById(`wordbank-${solved.word}`).style.setProperty("text-decoration", "line-through");
+    // console.log(solved.word);
   }
-}, 2000);
+}, 250);
 
-function drawConnector(letter1, letter2, lineType) {
-  const let1 = document.getElementById(`letter-${letter1[0]}-${letter1[1]}`);
-  const let2 = document.getElementById(`letter-${letter2[0]}-${letter2[1]}`);
-  const rect1 = let1.getBoundingClientRect();
-  const rect2 = let2.getBoundingClientRect();
+function drawConnector(letter1, letter2, lineType, words) {
+  try {
+    const let1 = document.getElementById(`letter-${letter1[0]}-${letter1[1]}`);
+    const let2 = document.getElementById(`letter-${letter2[0]}-${letter2[1]}`);
+    const rect1 = let1.getBoundingClientRect();
+    const rect2 = let2.getBoundingClientRect();
 
-  const letterGridArea = document.querySelector('.lettergrid-area');
-  const letterGridAreaRect = letterGridArea.getBoundingClientRect();
+    const letterGridArea = document.querySelector('.lettergrid-area');
+    const letterGridAreaRect = letterGridArea.getBoundingClientRect();
+    let x1_offset = 0;
+    let x2_offset = 0;
+    let y1_offset = 0;
+    let y2_offset = 0;
+    if (lineType === 'r') {
+      x1_offset = - 12;
+      x2_offset = 5;
+      y1_offset = -3;
+      y2_offset = y1_offset;
+    } else if (lineType === 'c') {
+      x1_offset = -3;
+      x2_offset = x1_offset;
+      y1_offset = -8;
+      y2_offset = 4;
+    } else if (lineType === '+') {
+      x1_offset = -4;
+      x2_offset = 3;
+      y1_offset = -3;
+      y2_offset = -6;
+    } else if (lineType === '-') {
+      
+    }
+    const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left + x1_offset;
+    const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + x2_offset;
+    const y1 = (rect1.top + rect1.bottom) / 2.0 - letterGridAreaRect.top + y1_offset;
+    const y2 = (rect2.top + rect2.bottom) / 2.0 - letterGridAreaRect.top + y2_offset;
 
-  let x1_offset = 0;
-  let x2_offset = 0;
-  let y1_offset = 0;
-  let y2_offset = 0;
-  if (lineType === 'r') {
-    x1_offset = - 12;
-    x2_offset = 5;
-    y1_offset = -3;
-    y2_offset = y1_offset;
-  } else if (lineType === 'c') {
-    x1_offset = -3;
-    x2_offset = x1_offset;
-    y1_offset = -8;
-    y2_offset = 4;
+    solvedWords.value.push({ x1, x2, y1, y2 });
+
+  } catch (error) {
+    console.log(error);
+    console.log(words);
+    console.log(letter1, letter2);
   }
-  const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left + x1_offset;
-  const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + x2_offset;
-  const y1 = (rect1.top + rect1.bottom) / 2.0 - letterGridAreaRect.top + y1_offset;
-  const y2 = (rect2.top + rect2.bottom) / 2.0 - letterGridAreaRect.top + y2_offset;
+  
 
-  solvedWords.value.push({ x1, x2, y1, y2 });
 }
 
 
@@ -97,6 +113,7 @@ function drawConnector(letter1, letter2, lineType) {
 <style scoped>
 .lettergrid-row {
   display: flex;
+  flex: 1 1 auto;
 }
 
 .lettergrid-area {
@@ -105,7 +122,8 @@ function drawConnector(letter1, letter2, lineType) {
   border-radius: 5px;
   display: flex;
   flex-direction: column;
-  height: min-content;
+  height: 100%;
+  width: 70%;
   flex: 1 1 auto;
   /* aspect-ratio: 1/1; */
 }
@@ -114,13 +132,11 @@ function drawConnector(letter1, letter2, lineType) {
   border: solid 3px white;
   border-radius: 5px;
   padding: 5%;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  flex: none;
-  height: min-content;
-  width: min-content;
-  gap: 5%;
+  column-width: 20%;  /* Set the minimum column width */
+  column-gap: 5%;
+  column-count: 2;
+  max-height: 100vh;
+  width: 25%;
 }
 
 .wordsearch {
@@ -129,6 +145,8 @@ function drawConnector(letter1, letter2, lineType) {
   /* aspect-ratio: 1/1; */
   gap: 5%;
   align-items: start;
+  max-height: 100vh;
+  max-width: 100vw;
 }
 
 /* Add more styles as necessary */

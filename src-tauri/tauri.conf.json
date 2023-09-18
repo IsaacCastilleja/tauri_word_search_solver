@@ -38,8 +38,8 @@
         "fullscreen": false,
         "resizable": false,
         "title": "rust_posting",
-        "width": 800,
-        "height": 700
+        "width": 1280,
+        "height": 720
       }
     ]
   }

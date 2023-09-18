@@ -16,5 +16,6 @@ const props = defineProps(['value']);
         justify-content: center;
         align-items: center;
         min-width: 25px;
+        min-height: 25px;
     }
 </style>

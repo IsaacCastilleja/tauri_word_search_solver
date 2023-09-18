@@ -9,8 +9,9 @@ const props = defineProps(['value']);
 </template>
 
 <style scoped>
-    .wordbank-item {
-        justify-content: top;
-        align-items: top;
-    }
+.wordbank-item {
+  break-inside: avoid;  /* Prevent items from breaking across columns */
+  align-self: flex-start;
+  width: 100%;  /* Ensure the item takes up the full column width */
+}
 </style>
