@@ -223,7 +223,7 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
         for sum in 0..diags {
             let mut diagonal_string = String::new();
             
-            let mut diagonal_coords = Vec::new();  // This will store grid coordinates for each character
+            let mut diagonal_coords = Vec::new();  // Store corresponding grid components for letters
             
             for row in (0..=std::cmp::min(sum, rows-1)).rev() {
                 let col = sum - row;
@@ -232,7 +232,7 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
                     diagonal_coords.push([row, col]);
                 }
             }
-    
+            let reversed_diagonal_string: String = diagonal_string.chars().rev().collect();
             for word in bank {
                 if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, false) {
                     let start_grid_coord = diagonal_coords[diagonal_indices[0]];
@@ -245,7 +245,7 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
                     });
                 }
                 
-                if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, true) {
+                if let Some(diagonal_indices) = parse_word_from_string(&reversed_diagonal_string, word, true) {
                     let start_grid_coord = diagonal_coords[diagonal_indices[0]];
                     let end_grid_coord = diagonal_coords[diagonal_indices[1]];
                     solved_words.push(SolvedWord { 
@@ -263,24 +263,25 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
     fn solve_negative_slope_diagonals(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
         let rows = grid.len();
         let cols = grid[0].len();
-        let diags = rows + cols - 1; // Total negative slope diagonals
+        let diags = rows + cols - 1;
     
         for sum in 0..diags {
             let mut diagonal_string = String::new();
-            let mut diagonal_coords = Vec::new();  // This will store grid coordinates for each character
+            let mut diagonal_coords = Vec::new();  // Store corresponding grid components for letters
             
-            // We start from the first column and move towards the last one
-            for col in (0..=std::cmp::min(sum, cols-1)).rev() {
+            // Start from the last column and move towards the first one
+            for col in 0..=(std::cmp::min(sum, cols-1)) {
                 
                 let row = sum - col;
                 if row < rows {
-                    print!("[{}, {}]", sum-col, col);
-                    diagonal_string.push(grid[row][col]);
-                    diagonal_coords.push([row, col]);
+                    // print!("[{}, {}]", row, cols - 1 - col);
+                    diagonal_string.push(grid[row][cols - 1 - col]);
+                    diagonal_coords.push([row, cols - 1 - col]);
                 }
             }
-            println!("");
-    
+            // println!("{}");
+            
+            let reverse_diagonal_string: String = diagonal_string.chars().rev().collect();
             for word in bank {
                 if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, false) {
                     let start_grid_coord = diagonal_coords[diagonal_indices[0]];
@@ -294,7 +295,7 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
                 }
                 
                 // For reversed
-                if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, true) {
+                if let Some(diagonal_indices) = parse_word_from_string(&reverse_diagonal_string, word, true) {
                     let start_grid_coord = diagonal_coords[diagonal_indices[0]];
                     let end_grid_coord = diagonal_coords[diagonal_indices[1]];
                     solved_words.push(SolvedWord {

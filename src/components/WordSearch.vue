@@ -71,7 +71,10 @@ function drawConnector(letter1, letter2, lineType, words) {
       y1_offset = -3;
       y2_offset = -6;
     } else if (lineType === '-') {
-      
+      x1_offset = 4;
+      x2_offset = -3;
+      y1_offset = 3;
+      y2_offset = -6;
     }
     const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left + x1_offset;
     const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + x2_offset;
