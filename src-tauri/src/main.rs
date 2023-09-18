@@ -216,179 +216,98 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
     }
 
     fn solve_positive_slope_diagonals(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
-        // boolean to know if right_diagonal should run on last iteration to prevent redundant searching of the middle diagonal
-
-        for row in 0..grid.len() {
-            let mut left_diagonal_string = String::new();
-            for col in 0..=row {
-                left_diagonal_string.push(grid[row - col][col]);
-                
+        let rows = grid.len();
+        let cols = grid[0].len();
+        let diags = rows + cols - 1;
+    
+        for sum in 0..diags {
+            let mut diagonal_string = String::new();
+            
+            let mut diagonal_coords = Vec::new();  // This will store grid coordinates for each character
+            
+            for row in (0..=std::cmp::min(sum, rows-1)).rev() {
+                let col = sum - row;
+                if col < cols {
+                    diagonal_string.push(grid[row][col]);
+                    diagonal_coords.push([row, col]);
+                }
             }
-            
-            let reversed_left_diagonal_string : String = left_diagonal_string.chars().rev().collect();
-            // println!("{}", &right_diagonal_string);
-            
-            for word in bank{
-                // Non-reversed left side
-                if let Some(diagonal_indices) = parse_word_from_string(&left_diagonal_string, word, false){
-                    let grid_indices = [
-                        [row - diagonal_indices[0], diagonal_indices[0]], 
-                        [row - diagonal_indices[1], diagonal_indices[1]]
-                    ];
+    
+            for word in bank {
+                if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, false) {
+                    let start_grid_coord = diagonal_coords[diagonal_indices[0]];
+                    let end_grid_coord = diagonal_coords[diagonal_indices[1]];
                     solved_words.push(SolvedWord {
-                        start_letter: grid_indices[0], 
-                        end_letter: grid_indices[1], 
+                        start_letter: start_grid_coord, 
+                        end_letter: end_grid_coord, 
                         word: word.clone(), 
                         line_type: '+'
                     });
                 }
-               
-                // Reversed left side
-                if let Some(diagonal_indices) = parse_word_from_string(&reversed_left_diagonal_string, word, true){
-                    let grid_indices = [
-                        [row - diagonal_indices[0], diagonal_indices[0]], 
-                        [row - diagonal_indices[1], diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord { 
-                        start_letter: grid_indices[0], 
-                        end_letter: grid_indices[1], 
-                        word: word.clone(), 
-                        line_type: '+'
-                    });
-                }
-               
-            }
-            
-        }
-        // DOESN"T FREAKING WORK
-        for col in 0..grid[0].len() {
-            let mut right_diagonal_string = String::new();
-            for row in 0..=col {
                 
-                print!("[{}, {}] ", row, grid[0].len() - 1 - col);
-                right_diagonal_string.push(grid[row][grid[0].len() - 1 - col]);
+                if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, true) {
+                    let start_grid_coord = diagonal_coords[diagonal_indices[0]];
+                    let end_grid_coord = diagonal_coords[diagonal_indices[1]];
+                    solved_words.push(SolvedWord { 
+                        start_letter: start_grid_coord, 
+                        end_letter: end_grid_coord, 
+                        word: word.clone(), 
+                        line_type: '+'
+                    });
+                }
+            }
+        }
+    }
+    
+
+    fn solve_negative_slope_diagonals(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
+        let rows = grid.len();
+        let cols = grid[0].len();
+        let diags = rows + cols - 1; // Total negative slope diagonals
+    
+        for sum in 0..diags {
+            let mut diagonal_string = String::new();
+            let mut diagonal_coords = Vec::new();  // This will store grid coordinates for each character
+            
+            // We start from the first column and move towards the last one
+            for col in (0..=std::cmp::min(sum, cols-1)).rev() {
+                
+                let row = sum - col;
+                if row < rows {
+                    print!("[{}, {}]", sum-col, col);
+                    diagonal_string.push(grid[row][col]);
+                    diagonal_coords.push([row, col]);
+                }
             }
             println!("");
     
-            let reversed_right_diagonal_string: String = right_diagonal_string.chars().rev().collect();
-            println!("{}", right_diagonal_string);
-            for word in bank{
-                 // Non-reverse right side
-                 if let Some(diagonal_indices) = parse_word_from_string(&right_diagonal_string, word, false){
-                    let grid_indices = [
-                        [grid.len() - 1 - diagonal_indices[0], grid[0].len() - 1 - col + diagonal_indices[0]], 
-                        [grid.len() - 1 - diagonal_indices[1], grid[0].len() - 1 - col + diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord { 
-                        start_letter: grid_indices[0],
-                        end_letter: grid_indices[1], 
+            for word in bank {
+                if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, false) {
+                    let start_grid_coord = diagonal_coords[diagonal_indices[0]];
+                    let end_grid_coord = diagonal_coords[diagonal_indices[1]];
+                    solved_words.push(SolvedWord {
+                        start_letter: start_grid_coord, 
+                        end_letter: end_grid_coord, 
                         word: word.clone(), 
-                        line_type: '+'
+                        line_type: '-'
                     });
                 }
-
-                 // Reversed right side
-                 if let Some(diagonal_indices) = parse_word_from_string(&reversed_right_diagonal_string, word, true){
-                    let grid_indices = [
-                        [grid.len() - 1 - diagonal_indices[0], grid[0].len() - 1 - col + diagonal_indices[0]], 
-                        [grid.len() - 1 - diagonal_indices[1], grid[0].len() - 1 - col + diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord { 
-                        start_letter: grid_indices[0],
-                        end_letter: grid_indices[1], 
+                
+                // For reversed
+                if let Some(diagonal_indices) = parse_word_from_string(&diagonal_string, word, true) {
+                    let start_grid_coord = diagonal_coords[diagonal_indices[0]];
+                    let end_grid_coord = diagonal_coords[diagonal_indices[1]];
+                    solved_words.push(SolvedWord {
+                        start_letter: start_grid_coord, 
+                        end_letter: end_grid_coord, 
                         word: word.clone(), 
-                        line_type: '+'
+                        line_type: '-'
                     });
                 }
             }
         }
-        
-        
-        
-
-        
     }
-
-    fn solve_negative_slope_diagonals(grid: &[Vec<char>], bank: &[String], solved_words: &mut Vec<SolvedWord>) {
-        // boolean to know if right_diagonal should run on last iteration to prevent redundant searching of the middle diagonal
-        let is_square = grid.len() == grid[0].len();
-
-        for row in 0..grid.len() {
-            let mut left_diagonal_string = String::new();
-            let mut right_diagonal_string = String::new();
-            for col in 0..=row {
-                // print!("[{}, {}] ", grid[0].len() - col - 1, grid.len() - row + col - 1);
-                left_diagonal_string.push(grid[grid.len() - 1 - row + col][col]);
-                
-                if is_square && col == grid.len() - 1 {
-                    break;
-                }
-
-                right_diagonal_string.push(grid[col][grid[0].len() - 1 - row + col]);
-                
-            }
-
-            let reversed_left_diagonal_string : String = left_diagonal_string.chars().rev().collect();
-            let reversed_right_diagonal_string: String = right_diagonal_string.chars().rev().collect();
-            for word in bank{
-                // Non-reversed left side
-                if let Some(diagonal_indices) = parse_word_from_string(&left_diagonal_string, word, false){
-                    let grid_indices = [
-                        [grid.len() - 1 - row + diagonal_indices[0], diagonal_indices[0]], 
-                        [grid.len() - 1 - row + diagonal_indices[1], diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord {
-                        start_letter: grid_indices[0], 
-                        end_letter: grid_indices[1], 
-                        word: word.clone(), 
-                        line_type: '-'
-                    });
-                }
-                // Non-reversed right side
-                if let Some(diagonal_indices) = parse_word_from_string(&right_diagonal_string, word, false){
-                    let grid_indices = [
-                        [diagonal_indices[0], grid[0].len() - 1 - row + diagonal_indices[0]], 
-                        [diagonal_indices[1], grid[0].len() - 1 - row + diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord { 
-                        start_letter: grid_indices[0],
-                        end_letter: grid_indices[1], 
-                        word: word.clone(), 
-                        line_type: '-'
-                    });
-                }
-                // Reversed left side
-                if let Some(diagonal_indices) = parse_word_from_string(&reversed_left_diagonal_string, word, true){
-                    let grid_indices = [
-                        [grid.len() - 1 - row + diagonal_indices[0], diagonal_indices[0]], 
-                        [grid.len() - 1 - row + diagonal_indices[1], diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord {
-                        start_letter: grid_indices[0], 
-                        end_letter: grid_indices[1], 
-                        word: word.clone(), 
-                        line_type: '-'
-                    });
-                }
-                // Reversed right side
-                if let Some(diagonal_indices) = parse_word_from_string(&reversed_right_diagonal_string, word, true){
-                    let grid_indices = [
-                        [diagonal_indices[0], grid[0].len() - 1 - row + diagonal_indices[0]], 
-                        [diagonal_indices[1], grid[0].len() - 1 - row + diagonal_indices[1]]
-                    ];
-                    solved_words.push(SolvedWord { 
-                        start_letter: grid_indices[0],
-                        end_letter: grid_indices[1], 
-                        word: word.clone(), 
-                        line_type: '-'
-                    });
-                }
-            }
-            
-        }
-
-        
-    }
+    
 
     solve_rows(&letter_grid, &word_bank, &mut final_solved);
     solve_columns(&letter_grid, &word_bank, &mut final_solved);
