@@ -60,46 +60,39 @@ let viewBoxHeight = ref(0);
 async function getGridArea() {
   setTimeout(() => {
     const let1 = document.getElementById(`letter-0-0`); // Top left corner
-    const let2 = document.getElementById(`letter-${grid_size.value[0] - 1}-${grid_size.value[1] - 1}`); // Bottom right corner
+   
     const grid_area = document.querySelector(".lettergrid-area");
 
-    const rect1 = let1.getBoundingClientRect();
-    const rect2 = let2.getBoundingClientRect();
-    const rect3 = grid_area.getBoundingClientRect();
-
-    // Get area bounded by the outer letters
-    const pixelWidth = rect2.right - rect1.left;
-    const pixelHeight = rect2.bottom - rect1.top;
-
-    const borderSpacingX = (rect3.right + 2.5 - pixelWidth);   // Space between outer letters and lettergrid-area border
-    const borderSpacingY = (rect3.bottom + 2.5 - pixelHeight); // Should be equal to borderSpacingX since 1/1 aspect ratio
+    const borderSpacingX = let1.offsetWidth/2;   // Space between outer letters and lettergrid-area border
+    const borderSpacingY = let1.offsetHeight/2 - 3; // Should be equal to borderSpacingX since 1/1 aspect ratio
     
   
     viewBoxWidth.value = 100;
     viewBoxHeight.value = (grid_size.value[0] - 1) / (grid_size.value[1] - 1) * 100;
 
-    viewBoxScaleX = 100 / pixelWidth; // Scaling factor in X direction
-    viewBoxScaleY = viewBoxHeight.value / pixelHeight; // Scaling factor in Y direction
+    viewBoxScaleX = 100 / grid_area.offsetWidth; // Scaling factor in X direction
+    viewBoxScaleY = viewBoxHeight.value / grid_area.offsetHeight; // Scaling factor in Y direction
     viewBoxSpacingX = borderSpacingX * viewBoxScaleX;
     viewBoxSpacingY = borderSpacingY * viewBoxScaleY;
 
-    letterScaleX = (100 - viewBoxSpacingX*2.0) / (grid_size.value[1] - 1);
-    letterScaleY = (viewBoxHeight.value - viewBoxSpacingY*2.0) / (grid_size.value[0] - 1);
-    console.log(pixelWidth, pixelHeight);
+    letterScaleX = (100 - viewBoxSpacingX * 2.0) / (grid_size.value[1] - 1);
+    letterScaleY = (viewBoxHeight.value - viewBoxSpacingY * 2.0) / (grid_size.value[0] - 1);
 
-
-  }, 100);
+  }, 150);
 }
 
 function drawConnector(letter1, letter2, lineType) {
   try {
-    const x1 = letter1[1] * letterScaleX + viewBoxSpacingX;
-    const y1 = letter1[0] * letterScaleY + viewBoxSpacingY;
+    let x1 = letter1[1] * letterScaleX + viewBoxSpacingX;
+    let y1 = letter1[0] * letterScaleY + viewBoxSpacingY;
 
-    const x2 = letter2[1] * letterScaleX + viewBoxSpacingX;
-    const y2 = letter2[0] * letterScaleY + viewBoxSpacingY;
+    let x2 = letter2[1] * letterScaleX + viewBoxSpacingX;
+    let y2 = letter2[0] * letterScaleY + viewBoxSpacingY;
 
-    console.log(x1, y1, x2, y2);
+    // if(lineType == 'r'){
+    //   y1 -= 4 * viewBoxScaleY;
+    //   y2 -= 4 * viewBoxScaleY; 
+    // }
 
     solvedWords.value.push({ x1, x2, y1, y2 });
 
@@ -115,7 +108,9 @@ function drawConnector(letter1, letter2, lineType) {
 <template>
   <div class=wordsearch>
     <div class="lettergrid-area">
-      <Connector v-for="solvedWord in solvedWords" :x1="solvedWord.x1" :x2="solvedWord.x2" :y1="solvedWord.y1" :y2="solvedWord.y2" :viewBoxDimension="`0 0 ${viewBoxWidth} ${viewBoxHeight}`"/>
+      <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg" :viewBox="`0 0 ${viewBoxWidth} ${viewBoxHeight}`">
+        <Connector v-for="solvedWord in solvedWords" :x1="solvedWord.x1" :x2="solvedWord.x2" :y1="solvedWord.y1" :y2="solvedWord.y2"/>
+      </svg>
       <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="lettergrid-row">
       <Letter v-for="(letter, colIndex) in row" :key="colIndex" :value="letter" :id="`letter-${rowIndex}-${colIndex}`"/>
     </div>
@@ -129,12 +124,24 @@ function drawConnector(letter1, letter2, lineType) {
 </template>
 
 <style scoped>
+.connectorSVG {
+  box-sizing: border-box;
+  z-index: 1000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 .lettergrid-row {
+  box-sizing: border-box;
   display: flex;
   flex: 1 1 auto;
+  /* align-items: center; */
 }
 
 .lettergrid-area {
+  /* box-sizing: border-box; */
   position:relative;
   border: solid 3px white;
   border-radius: 5px;
@@ -143,6 +150,7 @@ function drawConnector(letter1, letter2, lineType) {
   height: 100%;
   width: 70%;
   flex: 1 1 auto;
+  /* align-items:stretch; */
   /* aspect-ratio: 1/1; */
 }
 
