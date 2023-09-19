@@ -1,11 +1,11 @@
 <script setup>
 
-const props = defineProps(['x1', 'y1', 'x2', 'y2']);
+const props = defineProps(['x1', 'y1', 'x2', 'y2', 'viewBoxDimension']);
 
 </script>
 
 <template>
-    <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg" :viewBox="viewBoxDimension">
         <line class="path" :x1="x1" :y1="y1" :x2="x2" :y2="y2" stroke="white" stroke-width="0.15"/>
     </svg>
 </template>
@@ -24,6 +24,8 @@ const props = defineProps(['x1', 'y1', 'x2', 'y2']);
 .path {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
+  top: 0;
+  left: 0;
   animation: dash 2s linear forwards;
 }
 

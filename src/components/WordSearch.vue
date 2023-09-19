@@ -49,201 +49,57 @@ let solvedInterval = setInterval(async () => {
   }
 }, 250);
 
-// function drawConnector(letter1, letter2, lineType, words) {
-//   try {
-//     const let1 = document.getElementById(`letter-${letter1[0]}-${letter1[1]}`);
-//     const let2 = document.getElementById(`letter-${letter2[0]}-${letter2[1]}`);
-//     const rect1 = let1.getBoundingClientRect();
-//     const rect2 = let2.getBoundingClientRect();
-
-//     const letterGridArea = document.querySelector('.lettergrid-area');
-//     const letterGridAreaRect = letterGridArea.getBoundingClientRect();
-//     let x1_offset = 0;
-//     let x2_offset = 0;
-//     let y1_offset = 0;
-//     let y2_offset = 0;
-//     if (lineType === 'r') {
-//       x1_offset = - 12;
-//       x2_offset = 5;
-//       y1_offset = -3;
-//       y2_offset = y1_offset;
-//     } else if (lineType === 'c') {
-//       x1_offset = -3;
-//       x2_offset = x1_offset;
-//       y1_offset = -8;
-//       y2_offset = 4;
-//     } else if (lineType === '+') {
-//       x1_offset = -4;
-//       x2_offset = 3;
-//       y1_offset = -3;
-//       y2_offset = -6;
-//     } else if (lineType === '-') {
-//       x1_offset = 4;
-//       x2_offset = -3;
-//       y1_offset = 3;
-//       y2_offset = -6;
-//     }
-//     const x1 = (rect1.left + rect1.right) / 2.0 - letterGridAreaRect.left + x1_offset;
-//     const x2 = (rect2.left + rect2.right) / 2.0 - letterGridAreaRect.left + x2_offset;
-//     const y1 = (rect1.top + rect1.bottom) / 2.0 - letterGridAreaRect.top + y1_offset;
-//     const y2 = (rect2.top + rect2.bottom) / 2.0 - letterGridAreaRect.top + y2_offset;
-
-//     solvedWords.value.push({ x1, x2, y1, y2 });
-
-//   } catch (error) {
-//     console.log(error);
-//     console.log(words);
-//     console.log(letter1, letter2);
-//   }
-  
-
-// }
-
-// function getGridArea() {
-//   const let1 = document.getElementById(`letter-0-0`); // Top left corner
-//   const let2 = document.getElementById(`letter-${grid_size.value[0] - 1}-${grid_size.value[1] - 1}`); // Bottom right corner
-//   const rect1 = let1.getBoundingClientRect();
-//   const rect2 = let2.getBoundingClientRect();
-  
-//   const absoluteWidth = rect2.right - rect1.left;
-//   const absoluteHeight = rect2.bottom - rect1.top;
-//   const localWidth = 100 / absoluteWidth;
-//   const localHeight = 100 / absoluteHeight;
-
-//   return [localWidth, localHeight]; 
-// }
-
-// let viewBoxWidth = 0;
-// let viewBoxHeight = 0;
-// document.addEventListener("DOMContentLoaded", () => {
-//   viewBoxWidth, viewBoxHeight = getGridArea();
-// });
-
-// function drawConnector(letter1, letter2, lineType, words) {
-//   try {
-    
-//     // Converted to viewbox dimensions
-//     console.log(grid_size.value);
-//     const localX = 100/grid_size.value[1];
-//     const localY = 100/grid_size.value[0];
-
-    
-
-//   } catch (error) {
-//     console.log(error);
-//     console.log(words);
-//     console.log(letter1, letter2);
-//   }
-  
-
-// }
-
-let viewBoxWidth = 0;
-let viewBoxHeight = 0;
+let viewBoxScaleX = 0;
+let viewBoxScaleY = 0;
+let letterScaleX = 0;
+let letterScaleY = 0;
+let viewBoxSpacingX = 0;
+let viewBoxSpacingY = 0;
+let viewBoxWidth = ref(0);
+let viewBoxHeight = ref(0);
 async function getGridArea() {
   setTimeout(() => {
-    console.log(grid_size.value[0] - 1, grid_size.value[1] - 1);
     const let1 = document.getElementById(`letter-0-0`); // Top left corner
     const let2 = document.getElementById(`letter-${grid_size.value[0] - 1}-${grid_size.value[1] - 1}`); // Bottom right corner
+    const grid_area = document.querySelector(".lettergrid-area");
+
     const rect1 = let1.getBoundingClientRect();
     const rect2 = let2.getBoundingClientRect();
+    const rect3 = grid_area.getBoundingClientRect();
 
-    const absoluteWidth = rect2.right - rect1.left;
-    const absoluteHeight = rect2.bottom - rect1.top;
-    const localWidth = 100 / absoluteWidth;
-    const localHeight = 100 / absoluteHeight;
+    // Get area bounded by the outer letters
+    const pixelWidth = rect2.right - rect1.left;
+    const pixelHeight = rect2.bottom - rect1.top;
 
-    viewBoxWidth = localWidth;
-    viewBoxHeight = localHeight;
-    console.log(absoluteWidth, absoluteHeight)
-    console.log(viewBoxWidth, viewBoxHeight);
+    const borderSpacingX = (rect3.right + 2.5 - pixelWidth);   // Space between outer letters and lettergrid-area border
+    const borderSpacingY = (rect3.bottom + 2.5 - pixelHeight); // Should be equal to borderSpacingX since 1/1 aspect ratio
+    
+  
+    viewBoxWidth.value = 100;
+    viewBoxHeight.value = (grid_size.value[0] - 1) / (grid_size.value[1] - 1) * 100;
+
+    viewBoxScaleX = 100 / pixelWidth; // Scaling factor in X direction
+    viewBoxScaleY = viewBoxHeight.value / pixelHeight; // Scaling factor in Y direction
+    viewBoxSpacingX = borderSpacingX * viewBoxScaleX;
+    viewBoxSpacingY = borderSpacingY * viewBoxScaleY;
+
+    letterScaleX = (100 - viewBoxSpacingX*2.0) / (grid_size.value[1] - 1);
+    letterScaleY = (viewBoxHeight.value - viewBoxSpacingY*2.0) / (grid_size.value[0] - 1);
+    console.log(pixelWidth, pixelHeight);
+
+
   }, 100);
 }
 
-
-// function drawConnector(letter1, letter2, lineType, words) {
-//   try {
-//     const localX = viewBoxWidth;
-//     const localY = viewBoxHeight;
-
-//     let x1_offset = 0;
-//     let x2_offset = 0;
-//     let y1_offset = 0;
-//     let y2_offset = 0;
-//     // if (lineType === 'r') {
-//     //   x1_offset = 0;
-//     //   x2_offset = 0;
-//     //   y1_offset = 0;
-//     //   y2_offset = y1_offset;
-//     // } else if (lineType === 'c') {
-//     //   x1_offset = 1;
-//     //   x2_offset = x1_offset;
-//     //   y1_offset = -0.1;
-//     //   y2_offset = 0.1;
-//     // } else if (lineType === '+') {
-//     //   x1_offset = -0.4;
-//     //   x2_offset = 0.3;
-//     //   y1_offset = -0.3;
-//     //   y2_offset = -6;
-//     // } else if (lineType === '-') {
-//     //   x1_offset = 0.4;
-//     //   x2_offset = -0.3;
-//     //   y1_offset = 0.3;
-//     //   y2_offset = -6;
-//     // }
-
-//     const x1 = letter1[1] * localX + localX/2 + x1_offset;
-//     const y1 = letter1[0] * localY + localY/2 + y1_offset;
-
-//     const x2 = letter2[1] * localX + localX/2 + x2_offset;
-//     const y2 = letter2[0] * localY + localY/2 + y2_offset;
-
-//     solvedWords.value.push({ x1, x2, y1, y2 });
-
-//   } catch (error) {
-//     console.log(error);
-//     console.log(words);
-//     console.log(letter1, letter2);
-//   }
-// }
-
 function drawConnector(letter1, letter2, lineType) {
   try {
-    const localX = 100 / grid_size.value[1];
-    const localY = 100 / grid_size.value[0];
+    const x1 = letter1[1] * letterScaleX + viewBoxSpacingX;
+    const y1 = letter1[0] * letterScaleY + viewBoxSpacingY;
 
-    // ... (your offset logic) ...
-    let x1_offset = 0;
-    let x2_offset = 0;
-    let y1_offset = 0;
-    let y2_offset = 0;
-    if (lineType === 'r') {
-      x1_offset = 0;
-      x2_offset = 0;
-      y1_offset = 0;
-      y2_offset = y1_offset;
-    } else if (lineType === 'c') {
-      x1_offset = 1;
-      x2_offset = x1_offset;
-      y1_offset = -0.1;
-      y2_offset = 0.1;
-    } else if (lineType === '+') {
-      x1_offset = -0.4;
-      x2_offset = 0.3;
-      y1_offset = -0.3;
-      y2_offset = -6;
-    } else if (lineType === '-') {
-      x1_offset = 0.4;
-      x2_offset = -0.3;
-      y1_offset = 0.3;
-      y2_offset = -6;
-    }
+    const x2 = letter2[1] * letterScaleX + viewBoxSpacingX;
+    const y2 = letter2[0] * letterScaleY + viewBoxSpacingY;
 
-    const x1 = letter1[1] * localX + localX / 2 + x1_offset * viewBoxWidth; // Multiplying offset by viewBoxWidth to scale it correctly
-    const y1 = letter1[0] * localY + localY / 2 + y1_offset * viewBoxHeight;
-
-    const x2 = letter2[1] * localX + localX / 2 + x2_offset * viewBoxWidth;
-    const y2 = letter2[0] * localY + localY / 2 + y2_offset * viewBoxHeight;
+    console.log(x1, y1, x2, y2);
 
     solvedWords.value.push({ x1, x2, y1, y2 });
 
@@ -259,7 +115,7 @@ function drawConnector(letter1, letter2, lineType) {
 <template>
   <div class=wordsearch>
     <div class="lettergrid-area">
-      <Connector v-for="solvedWord in solvedWords" :x1="solvedWord.x1" :x2="solvedWord.x2" :y1="solvedWord.y1" :y2="solvedWord.y2"/>
+      <Connector v-for="solvedWord in solvedWords" :x1="solvedWord.x1" :x2="solvedWord.x2" :y1="solvedWord.y1" :y2="solvedWord.y2" :viewBoxDimension="`0 0 ${viewBoxWidth} ${viewBoxHeight}`"/>
       <div v-for="(row, rowIndex) in grid" :key="rowIndex" class="lettergrid-row">
       <Letter v-for="(letter, colIndex) in row" :key="colIndex" :value="letter" :id="`letter-${rowIndex}-${colIndex}`"/>
     </div>
@@ -307,6 +163,8 @@ function drawConnector(letter1, letter2, lineType) {
   /* aspect-ratio: 1/1; */
   gap: 5%;
   align-items: start;
+  min-width: fit-content;
+  min-height: fit-content;
   max-height: 100vh;
   max-width: 100vw;
 }
