@@ -36,7 +36,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": false,
+        "resizable": true,
         "title": "rust_posting",
         "width": 1280,
         "height": 720

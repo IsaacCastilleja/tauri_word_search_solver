@@ -58,7 +58,9 @@ fn parse_wordbank(path: &str) -> Vec<String> {
 #[derive(Clone)]
 struct WordSearch{
     letter_grid: Vec<Vec<char>>,
+    letter_grid_size: [usize; 2],
     word_bank: Vec<String>,
+    word_bank_size: usize,
 }
 
 impl Serialize for WordSearch {
@@ -69,7 +71,9 @@ impl Serialize for WordSearch {
         // 3 is the number of fields in the struct.
         let mut state = serializer.serialize_struct("WordSearch", 2)?;
         state.serialize_field("letter_grid", &self.letter_grid)?;
+        state.serialize_field("letter_grid_size", &self.letter_grid_size)?;
         state.serialize_field("word_bank", &self.word_bank)?;
+        state.serialize_field("word_bank_size", &self.word_bank_size)?;
         state.end()
     }
 }
@@ -320,10 +324,14 @@ fn solve_wordsearch(wordsearch: WordSearch) -> Vec<SolvedWord> {
 
 fn main() {
     let parsed_lettergrid = parse_wordsearch("./src/word_search3.txt");
+    let parsed_lettergrid_size = [parsed_lettergrid.len(), parsed_lettergrid[0].len()];
     let parsed_wordbank = parse_wordbank("./src/word_bank3.txt");
+    let parsed_wordbank_size = parsed_wordbank.len();
     let parsed_wordsearch = WordSearch {
         letter_grid: parsed_lettergrid,
+        letter_grid_size: parsed_lettergrid_size,
         word_bank: parsed_wordbank,
+        word_bank_size: parsed_wordbank_size,
     };
     
     // Hash set to get rid of duplicate solutions (like if there is a palindrome)

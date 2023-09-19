@@ -5,8 +5,8 @@ const props = defineProps(['x1', 'y1', 'x2', 'y2']);
 </script>
 
 <template>
-    <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg">
-        <line class="path" :x1="x1" :y1="y1" :x2="x2" :y2="y2" stroke="white" stroke-width="1.5px"/>
+    <svg class="connectorSVG" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <line class="path" :x1="x1" :y1="y1" :x2="x2" :y2="y2" stroke="white" stroke-width="0.15"/>
     </svg>
 </template>
   
@@ -15,13 +15,15 @@ const props = defineProps(['x1', 'y1', 'x2', 'y2']);
 .connectorSVG {
     z-index: 1000;
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
 }
 
 .path {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
   animation: dash 2s linear forwards;
 }
 
